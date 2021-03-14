@@ -10,6 +10,13 @@ use PHPUnit\Framework\TestCase;
 
 class CategoryTest extends TestCase
 {
+    private Category $category;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->category = new Category();
+    }
+
     public function testFillableAttributes()
     {
         $fillable = [
@@ -18,8 +25,7 @@ class CategoryTest extends TestCase
             'is_active'
         ];
 
-        $category = new Category();
-        $this->assertEquals($fillable, $category->getFillable());
+        $this->assertEquals($fillable, $this->category->getFillable());
     }
 
     public function testIfUseTraits()
@@ -39,14 +45,12 @@ class CategoryTest extends TestCase
             'deleted_at' => 'datetime'
         ];
 
-        $category = new Category();
-        $this->assertEquals($casts, $category->getCasts());
+        $this->assertEquals($casts, $this->category->getCasts());
     }
 
     public function testIncrementingAttribute()
     {
-        $category = new Category();
-        $this->assertFalse($category->incrementing);
+        $this->assertFalse($this->category->incrementing);
     }
 
     public function testDatesAttribute()
@@ -56,8 +60,8 @@ class CategoryTest extends TestCase
             'created_at',
             'updated_at'
         ];
-        $category = new Category();
-        $categoryDates = $category->getDates();
+
+        $categoryDates = $this->category->getDates();
         foreach ($dates as $date) {
             $this->assertContains($date, $categoryDates);
         }
