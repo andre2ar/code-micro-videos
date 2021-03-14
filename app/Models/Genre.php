@@ -18,4 +18,7 @@ class Genre extends Model
         'is_active'
     ];
     protected $dates = ['deleted_at'];
+    protected $casts = [
+        'is_active' => 'boolean'
+    ];
 }
