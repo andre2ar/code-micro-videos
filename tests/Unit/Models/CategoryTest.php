@@ -42,7 +42,8 @@ class CategoryTest extends TestCase
     public function testCastsAttribute()
     {
         $casts = [
-            'deleted_at' => 'datetime'
+            'deleted_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
 
         $this->assertEquals($casts, $this->category->getCasts());
