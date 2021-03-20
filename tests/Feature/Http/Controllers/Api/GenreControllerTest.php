@@ -8,10 +8,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
+use Tests\Traits\TestValidations;
 
 class GenreControllerTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseMigrations, TestValidations;
     public function testIndex()
     {
         $genre = Genre::factory()->create();
@@ -40,8 +41,8 @@ class GenreControllerTest extends TestCase
             'name' => str_repeat('a', 256),
             'is_active' => 'a'
         ]);
-        $this->assertInvalidationMax($response);
-        $this->assertInvalidationBoolean($response);
+        $this->assertInvalidationFields($response, ['name'], 'max.string', ['max' => 255]);
+        $this->assertInvalidationFields($response, ['is_active'], 'boolean');
 
         // Update
         $genre = Genre::factory()->create();
@@ -52,33 +53,13 @@ class GenreControllerTest extends TestCase
             'name' => str_repeat('a', 256),
             'is_active' => 'a'
         ]);
-        $this->assertInvalidationMax($response);
-        $this->assertInvalidationBoolean($response);
+        $this->assertInvalidationFields($response, ['name'], 'max.string', ['max' => 255]);
+        $this->assertInvalidationFields($response, ['is_active'], 'boolean');
     }
 
     private function assertInvalidationRequired(TestResponse $response) {
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name'])
-            ->assertJsonMissingValidationErrors(['is_active'])
-            ->assertJsonFragment([
-                trans('validation.required', ['attribute' => 'name'])
-            ]);
-    }
-
-    private function assertInvalidationMax(TestResponse $response) {
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name'])
-            ->assertJsonFragment([
-                trans('validation.max.string', ['attribute' => 'name', 'max' => 255])
-            ]);
-    }
-
-    private function assertInvalidationBoolean(TestResponse $response) {
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['is_active'])
-            ->assertJsonFragment([
-                trans('validation.boolean', ['attribute' => 'is active'])
-            ]);
+        $this->assertInvalidationFields($response, ['name'], 'required');
+        $response->assertJsonMissingValidationErrors(['is_active']);
     }
 
     public function testStore() {
