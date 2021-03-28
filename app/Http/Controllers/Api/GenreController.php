@@ -6,7 +6,7 @@ use App\Models\Genre;
 
 class GenreController extends BasicCrudController
 {
-    private $rules = [
+    private array $rules = [
         'name' => 'required|max:255',
         'is_active' => 'boolean'
     ];
