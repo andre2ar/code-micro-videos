@@ -3,7 +3,7 @@
 namespace Tests\Stubs\Controllers;
 
 use App\Http\Controllers\Api\BasicCrudController;
-use App\Models\Category;
+use App\Models\Video;
 use Illuminate\Http\Request;
 use Tests\Stubs\Models\CategoryStub;
 
