@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\BasicCrudController;
-use App\Http\Controllers\Controller;
 use App\Models\Video;
+use App\Rules\GenresHasCategoriesRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,8 +19,17 @@ class VideoController extends BasicCrudController
             'opened' => 'boolean',
             'rating' => 'required|in:'.implode(',', Video::RATING_LIST),
             'duration' => 'required|integer',
-            'categories_id' => 'required|array|exists:categories,id,deleted_at,NULL',
-            'genres_id' => 'required|array|exists:genres,id,deleted_at,NULL',
+            'categories_id' => [
+                'required',
+                'array',
+                'exists:categories,id,deleted_at,NULL',
+            ],
+            'genres_id' => [
+                'required',
+                'array',
+                'exists:genres,id,deleted_at,NULL',
+                /*new GenresHasCategoriesRule(\request()->categories_id)*/
+            ],
         ];
     }
 
