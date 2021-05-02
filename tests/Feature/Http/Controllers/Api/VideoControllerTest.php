@@ -164,6 +164,7 @@ class VideoControllerTest extends TestCase
     {
         $category = Category::factory()->create();
         $genre = Genre::factory()->create();
+        $genre->categories()->sync([$category->id]);
 
         $response = $this->assertStore(
             $this->sendData + ['categories_id' => [$category->id], 'genres_id' => [$genre->id]],
@@ -217,10 +218,12 @@ class VideoControllerTest extends TestCase
     public function testUpdate() {
         $category = Category::factory()->create();
         $genre = Genre::factory()->create();
+        $genre->categories()->sync([$category->id]);
 
         $response = $this->assertUpdate(
             $this->sendData + ['categories_id' => [$category->id], 'genres_id' => [$genre->id]],
-            $this->sendData + ['opened' => false]);
+            $this->sendData + ['opened' => false]
+        );
         $response->assertJsonStructure([
             'created_at',
             'updated_at',
@@ -315,8 +318,8 @@ class VideoControllerTest extends TestCase
         $genres = Genre::factory(3)->create();
         $genresId = $genres->pluck('id')->toArray();
         $categoryId = Category::factory()->create()->id;
-        $genres->each(function ($genre) use ($categoryId) {
-            $genre->categories()->sync($categoryId);
+        $genres->each(function (&$genre) use (&$categoryId) {
+            $genre->categories()->sync([$categoryId]);
         });
 
         $response = $this->json(

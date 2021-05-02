@@ -28,13 +28,13 @@ class VideoController extends BasicCrudController
                 'required',
                 'array',
                 'exists:genres,id,deleted_at,NULL',
-                /*new GenresHasCategoriesRule(\request()->categories_id)*/
             ],
         ];
     }
 
     public function store(Request $request)
     {
+        $this->addRuleIfGenresHasCategories($request);
         $validated = $request->validate($this->rulesStore());
 
         $self = $this;
@@ -51,6 +51,7 @@ class VideoController extends BasicCrudController
 
     public function update(Request $request, $id)
     {
+        $this->addRuleIfGenresHasCategories($request);
         $validated = $request->validate($this->rulesUpdate());
 
         /** @var Video $video */
@@ -65,7 +66,16 @@ class VideoController extends BasicCrudController
         return $video;
     }
 
-    protected function handleRelations(Video &$video, Request &$request) {
+    protected function addRuleIfGenresHasCategories(Request $request)
+    {
+        if(!is_array($request->categories_id)) {
+            return;
+        }
+        $this->rules['genres_id'][] = new GenresHasCategoriesRule($request->categories_id);
+    }
+
+    protected function handleRelations(Video &$video, Request &$request)
+    {
         $video->categories()->sync($request->categories_id);
         $video->genres()->sync($request->genres_id);
     }
