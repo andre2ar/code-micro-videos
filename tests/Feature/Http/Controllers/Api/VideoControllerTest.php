@@ -184,37 +184,6 @@ class VideoControllerTest extends TestCase
         );
     }
 
-    public function testRollbackStore()
-    {
-        $controller = \Mockery::mock(VideoController::class)
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-
-        $controller->shouldReceive('rulesStore')
-            ->withAnyArgs()
-            ->andReturn([]);
-
-        $request = \Mockery::mock(new Request())
-            ->makePartial();
-        $request->shouldReceive('validate')
-            ->withAnyArgs()
-            ->andReturn($this->sendData);
-
-        $controller->shouldReceive('handleRelations')
-            ->once()
-            ->andThrow(new TestException());
-
-        $hasError = false;
-        try {
-            $controller->store($request);
-        } catch (TestException $exception) {
-            $this->assertCount(1, Video::all());
-            $hasError = true;
-        }
-
-        $this->assertTrue($hasError);
-    }
-
     public function testUpdate() {
         $category = Category::factory()->create();
         $genre = Genre::factory()->create();
@@ -236,37 +205,6 @@ class VideoControllerTest extends TestCase
             $this->sendData + ['categories_id' => [$category->id], 'genres_id' => [$genre->id], 'rating' => Video::RATING_LIST[1]],
             $this->sendData + ['rating' => Video::RATING_LIST[1]]
         );
-    }
-
-    public function testRollbackUpdate()
-    {
-        $controller = \Mockery::mock(VideoController::class)
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-
-        $controller->shouldReceive('rulesUpdate')
-            ->withAnyArgs()
-            ->andReturn([]);
-
-        $request = \Mockery::mock(new Request())
-            ->makePartial();
-        $request->shouldReceive('validate')
-            ->withAnyArgs()
-            ->andReturn($this->sendData);
-
-        $controller->shouldReceive('handleRelations')
-            ->once()
-            ->andThrow(new TestException());
-
-        $hasError = false;
-        try {
-            $controller->update($request, $this->video->id);
-        } catch (TestException $exception) {
-            $this->assertCount(1, Video::all());
-            $hasError = true;
-        }
-
-        $this->assertTrue($hasError);
     }
 
     public function testSyncCategories()

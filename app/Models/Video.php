@@ -6,6 +6,8 @@ use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class Video extends Model
 {
@@ -36,6 +38,54 @@ class Video extends Model
         'year_launched' => 'integer',
         'duration' => 'integer',
     ];
+
+    public static function create(array $attributes = [])
+    {
+        try {
+            DB::beginTransaction();
+            $video = static::query()->create($attributes);
+            static::handleRelations($video, $attributes);
+            DB::commit();
+
+            return $video;
+        } catch (\Exception $exception) {
+            if(isset($video)) {
+
+            }
+
+            DB::rollBack();
+            throw $exception;
+        }
+    }
+
+    public function update(array $attributes = [], array $options = [])
+    {
+        try {
+            DB::beginTransaction();
+            $saved = parent::update($attributes, $options);
+            static::handleRelations($this, $attributes);
+            if($saved) {
+
+            }
+            DB::commit();
+
+            return $saved;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
+    }
+
+    public static function handleRelations(Video &$video, array $attributes)
+    {
+        if (isset($attributes['categories_id'])) {
+            $video->categories()->sync($attributes['categories_id']);
+        }
+
+        if (isset($attributes['genres_id'])) {
+            $video->genres()->sync($attributes['genres_id']);
+        }
+    }
 
     public function categories()
     {
