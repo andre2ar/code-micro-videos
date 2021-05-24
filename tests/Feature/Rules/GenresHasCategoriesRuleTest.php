@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Rules;
+namespace Tests\Feature\Models\Rules;
 
 
 use App\Models\Category;
