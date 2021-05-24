@@ -14,4 +14,12 @@ class UploadFileStub extends Model
     protected function uploadDir(): string {
         return '1';
     }
+
+    protected static function fileFields(): array
+    {
+        return [
+            'file1',
+            'file2',
+        ];
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\UploadFiles;
 use App\Models\Traits\Uuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class Video extends Model
 {
-    use HasFactory, SoftDeletes, Uuid;
+    use HasFactory, SoftDeletes, Uuid, UploadFiles;
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -41,10 +42,15 @@ class Video extends Model
 
     public static function create(array $attributes = [])
     {
+        $files = self::extractFiles($attributes);
         try {
             DB::beginTransaction();
+
+            /** @var Video $video */
             $video = static::query()->create($attributes);
             static::handleRelations($video, $attributes);
+            $video->uploadFiles($files);
+
             DB::commit();
 
             return $video;
@@ -95,5 +101,19 @@ class Video extends Model
     public function genres()
     {
         return $this->belongsToMany(Genre::class)->withTrashed();
+    }
+
+    protected function uploadDir(): string
+    {
+        return $this->id;
+    }
+
+    protected static function fileFields(): array
+    {
+        return [
+            'film',
+            'banner',
+            'trailer',
+        ];
     }
 }
