@@ -19,6 +19,10 @@ class Video extends Model
     const RATING_LIST = [
         'L', '10', '12', '14', '16', '18'
     ];
+    const THUMB_FILE_MAX_SIZE = 1024 * 5; // 5MB
+    const BANNER_FILE_MAX_SIZE = 1024 * 10; // 10MB
+    const TRAILER_FILE_MAX_SIZE = 1024 * 100; // 100MB
+    const VIDEO_FILE_MAX_SIZE = 1024 * 50; // 50MB
 
     protected $fillable = [
         'title',
@@ -27,6 +31,7 @@ class Video extends Model
         'rating',
         'duration',
         'year_launched',
+        'video_file'
     ];
 
     protected $dates = [
@@ -111,9 +116,7 @@ class Video extends Model
     protected static function fileFields(): array
     {
         return [
-            'film',
-            'banner',
-            'trailer',
+            'video_file'
         ];
     }
 }
