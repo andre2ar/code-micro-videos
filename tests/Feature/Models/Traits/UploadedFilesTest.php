@@ -56,7 +56,7 @@ class UploadedFilesTest extends TestCase
         $file2 = UploadedFile::fake()->create('video2.mp4');
         $this->uploadFileStub->deleteFiles([
             $file1,
-            $file2
+            $file2->hashName()
         ]);
 
         Storage::assertMissing("1/{$file1->hashName()}");
