@@ -31,7 +31,8 @@ class Video extends Model
         'rating',
         'duration',
         'year_launched',
-        'video_file'
+        'video_file',
+        'thumb_file',
     ];
 
     protected $dates = [
@@ -61,7 +62,7 @@ class Video extends Model
             return $video;
         } catch (\Exception $exception) {
             if(isset($video)) {
-
+                $video->deleteFiles($files);
             }
 
             DB::rollBack();
@@ -116,7 +117,8 @@ class Video extends Model
     protected static function fileFields(): array
     {
         return [
-            'video_file'
+            'video_file',
+            'thumb_file',
         ];
     }
 }
