@@ -37,6 +37,60 @@ class UploadedFilesTest extends TestCase
         Storage::assertExists("1/{$file2->hashName()}");
     }
 
+    public function testDeleteOldFiles()
+    {
+        Storage::fake();
+        $file1 = UploadedFile::fake()->create('video1.mp4')->size(1);
+        $file2 = UploadedFile::fake()->create('video2.mp4')->size(1);
+        $this->uploadFileStub->uploadFiles([$file1, $file2]);
+        $this->uploadFileStub->deleteOldFiles();
+        $this->assertCount(2, Storage::allFiles());
+
+        $this->uploadFileStub->oldFiles = [$file1->hashName()];
+        $this->uploadFileStub->deleteOldFiles();
+        Storage::assertMissing("1/{$file1->hashName()}");
+        Storage::assertExists("1/{$file2->hashName()}");
+    }
+
+    public function testMakeOldFieldsOnSaving()
+    {
+        UploadFileStub::dropTable();
+        UploadFileStub::makeTable();
+
+        $this->uploadFileStub->fill([
+            'name' => 'test',
+            'file1' => 'test1.mp4',
+            'file2' => 'test2.mp4'
+        ]);
+        $this->uploadFileStub->save();
+
+        $this->assertCount(0, $this->uploadFileStub->oldFiles);
+
+        $this->uploadFileStub->update([
+            'name' => 'test_name',
+            'file2' => 'test3.mp4'
+        ]);
+
+        $this->assertEqualsCanonicalizing(['test2.mp4'], $this->uploadFileStub->oldFiles);
+    }
+
+    public function testMakeOldFilesNullOnSaving() {
+        UploadFileStub::dropTable();
+        UploadFileStub::makeTable();
+
+        $this->uploadFileStub->fill([
+            'name' => 'test',
+        ]);
+        $this->uploadFileStub->save();
+
+        $this->uploadFileStub->update([
+            'name' => 'test_name',
+            'file2' => 'test3.mp4'
+        ]);
+
+        $this->assertEqualsCanonicalizing([], $this->uploadFileStub->oldFiles);
+    }
+
     public function testDeleteFile()
     {
         $file = UploadedFile::fake()->create('video.mp4');
