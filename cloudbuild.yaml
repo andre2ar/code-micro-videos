@@ -1,24 +1,48 @@
 steps:
-- id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - kms
+      - decrypt
+      - --ciphertext-file=./storage/credentials/google/smiling-timing-148416-9bf14e9b3047.json.enc
+      - --plaintext-file=./storage/credentials/google/smiling-timing-148416-9bf14e9b3047.json
+      - --location=global
+      - --keyring=testing-lesson
+      - --key=service-account
 
-- id: "Rodando composer"
-  name: 'gcr.io/cloud-builders/docker'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: 'Run docker-compose'
+    name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
+    args: ['-f', 'docker-compose.cbuild.yaml', 'up', '-d']
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=smiling-timing-148416-9bf14e9b3047.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=andre-code-micro-videos
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/andre-code-micro-videos
+      - TESTING_PROD=true
 
-- id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: 'Copy .env'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.example', '.env']
 
-- id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: 'Copy .env.testing'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.testing.example', '.env.testing']
 
-- id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: 'Run php composer'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'composer', 'install']
 
-- id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
-  args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+  - id: 'Generate .env key'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'key:generate']
+
+  - id: 'Generate .env.testing key'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'key:generate', '--env=testing']
+
+  - id: 'Run migrations'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'migrate']
+
+  - id: 'Run phpunit'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/vendor/bin/phpunit', '-c', '/var/www/phpunit.xml']

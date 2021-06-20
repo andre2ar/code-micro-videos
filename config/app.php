@@ -27,6 +27,7 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+    'testing_prod' => env('TESTING_PROD', false),
 
     /*
     |--------------------------------------------------------------------------
