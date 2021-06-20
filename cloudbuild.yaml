@@ -1,5 +1,6 @@
 steps:
-  - name: 'gcr.io/cloud-builders/gcloud'
+  - id: 'Generate smiling-timing-148416-9bf14e9b3047.json'
+    name: 'gcr.io/cloud-builders/gcloud'
     args:
       - kms
       - decrypt

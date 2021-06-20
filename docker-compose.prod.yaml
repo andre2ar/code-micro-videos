@@ -4,6 +4,12 @@ services:
 
     app:
         build: .
+        environment:
+            - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+            - GOOGLE_CLOUD_KEY_FILE=${GOOGLE_CLOUD_KEY_FILE}
+            - GOOGLE_CLOUD_STORAGE_BUCKET=${GOOGLE_CLOUD_STORAGE_BUCKET}
+            - GOOGLE_CLOUD_STORAGE_API_URI=${GOOGLE_CLOUD_STORAGE_API_URI}
+            - TESTING_PROD=${TESTING_PROD}
         container_name: micro-videos-app
         restart: unless-stopped
         volumes:
@@ -31,18 +37,16 @@ services:
     db:
         build: ./.docker/mysql
         container_name: micro-videos-db
-        restart: unless-stopped
         tty: true
         ports:
-            - "33006:3306"
+          - "33006:3306"
         volumes:
-            - ./.docker/dbdata:/var/lib/mysql
-            - ./.docker/mysql:/docker-entrypoint-initdb.d
+          - ./.docker/dbdata:/var/lib/mysql
+          - ./.docker/mysql:/docker-entrypoint-initdb.d
         environment:
-            - MYSQL_ROOT_PASSWORD=root
-            - MYSQL_USER=root
+          - MYSQL_ROOT_PASSWORD=root
         networks:
-            - app-network
+          - app-network
 
     redis:
         image: redis:alpine
