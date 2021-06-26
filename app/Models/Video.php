@@ -33,6 +33,8 @@ class Video extends Model
         'year_launched',
         'video_file',
         'thumb_file',
+        'banner_file',
+        'trailer_file'
     ];
 
     protected $dates = [
@@ -125,6 +127,8 @@ class Video extends Model
         return [
             'video_file',
             'thumb_file',
+            'banner_file',
+            'trailer_file'
         ];
     }
 
