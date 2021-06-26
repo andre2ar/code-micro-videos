@@ -17,12 +17,43 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 {
     use TestValidations, TestUploads;
 
+    public function testInvalidationThumbField()
+    {
+        $this->assertInvalidationFile(
+            'thumb_file',
+            'jpg',
+            Video::THUMB_FILE_MAX_SIZE,
+            'image'
+        );
+    }
+
+    public function testInvalidationBannerField()
+    {
+        $this->assertInvalidationFile(
+            'banner_file',
+            'jpg',
+            Video::BANNER_FILE_MAX_SIZE,
+            'image'
+        );
+    }
+
+    public function testInvalidationTrailerField()
+    {
+        $this->assertInvalidationFile(
+            'trailer_file',
+            'jpg',
+            Video::TRAILER_FILE_MAX_SIZE,
+            'mimetypes',
+            ['values' => 'video/mp4']
+        );
+    }
+
     public function testInvalidationVideoField()
     {
         $this->assertInvalidationFile(
             'video_file',
             'mp4',
-            12,
+            Video::VIDEO_FILE_MAX_SIZE,
             'mimetypes',
             ['values' => 'video/mp4']
         );
@@ -33,18 +64,10 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         Storage::fake();
         $files = $this->getFiles();
 
-        $category = Category::factory()->create();
-        $genre = Genre::factory()->create();
-        $genre->categories()->sync($category->id);
-
         $response = $this->json(
             'POST',
             $this->routeStore(),
-            $this->sendData + [
-                'categories_id' => [$category->id],
-                'genres_id' => [$genre->id],
-            ] +
-            $files
+            $this->sendData + $files
         );
         $response->assertStatus(201);
         $id = $response->json('id');
@@ -58,18 +81,10 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         Storage::fake();
         $files = $this->getFiles();
 
-        $category = Category::factory()->create();
-        $genre = Genre::factory()->create();
-        $genre->categories()->sync($category->id);
-
         $response = $this->json(
             'PUT',
             $this->routeUpdate(),
-            $this->sendData + [
-                'categories_id' => [$category->id],
-                'genres_id' => [$genre->id],
-            ] +
-            $files
+            $this->sendData + $files
         );
         $response->assertStatus(200);
 

@@ -120,11 +120,31 @@ class Video extends Model
         return $this->id;
     }
 
-    protected static function fileFields(): array
+    public static function fileFields(): array
     {
         return [
             'video_file',
             'thumb_file',
         ];
+    }
+
+    public function getThumbFileUrlAttribute(): ?string
+    {
+        return $this->thumb_file ? $this->getFileUrl($this->thumb_file) : null;
+    }
+
+    public function getBannerFileUrlAttribute(): ?string
+    {
+        return $this->banner_file ? $this->getFileUrl($this->banner_file) : null;
+    }
+
+    public function getTrailerFileUrlAttribute(): ?string
+    {
+        return $this->trailer_file ? $this->getFileUrl($this->trailer_file) : null;
+    }
+
+    public function getVideoFileUrlAttribute(): ?string
+    {
+        return $this->video_file ? $this->getFileUrl($this->video_file) : null;
     }
 }

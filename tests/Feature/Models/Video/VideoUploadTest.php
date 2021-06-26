@@ -93,4 +93,30 @@ class VideoUploadTest extends BaseVideoTestCase
 
         $this->assertTrue($hasError);
     }
+
+    public function testFileUrlWithLocalDriver()
+    {
+        $fileFields = [];
+        foreach (Video::fileFields() as $field) {
+            $fileFields[$field] = "$field.test";
+        }
+
+        $video = Video::factory()->create($fileFields);
+        $localDriver = config('filesystems.default');
+        $baseUrl = config('filesystems.disks.' . $localDriver)['url'];
+
+        foreach ($fileFields as $field => $value) {
+            $fileUrl = $video->{"{$field}_url"};
+            $this->assertEquals("{$baseUrl}/$video->id/$value", $fileUrl);
+        }
+    }
+
+    public function testFileUrlsIfNullWhenFiledAreNull()
+    {
+        $video = Video::factory()->create();
+        foreach (Video::fileFields() as $field) {
+            $fileUrl = $video->{"{$field}_url"};
+            $this->assertNull($fileUrl);
+        }
+    }
 }
