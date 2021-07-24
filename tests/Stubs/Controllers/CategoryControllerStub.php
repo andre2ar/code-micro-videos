@@ -29,4 +29,14 @@ class CategoryControllerStub extends BasicCrudController
             'description' => 'nullable'
         ];
     }
+
+    protected function resourceCollection()
+    {
+        return $this->resource();
+    }
+
+    protected function resource()
+    {
+        return CategoryStub::class;
+    }
 }

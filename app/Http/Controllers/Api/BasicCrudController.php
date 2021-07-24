@@ -3,19 +3,36 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 abstract class BasicCrudController extends Controller
 {
+    protected int $paginationSize = 15;
+
     protected abstract function model();
 
     protected abstract function rulesStore(): array;
 
     protected abstract function rulesUpdate(): array;
 
+    protected abstract function resource();
+
+    protected abstract function resourceCollection();
+
     public function index()
     {
-        return $this->model()::all();
+        $data = !$this->paginationSize ? $this->model()::all() : $this->model()::paginate($this->paginationSize);
+
+        $resource = $this->resource();
+        $resourceCollection = $this->resourceCollection();
+
+        $refResourceCollectionClass = new \ReflectionClass($this->resourceCollection());
+
+        return $refResourceCollectionClass->isSubclassOf(ResourceCollection::class)
+            ? new $resourceCollection($data)
+            : $resource::collection($data);
     }
 
     public function store(Request $request)
@@ -24,12 +41,19 @@ abstract class BasicCrudController extends Controller
 
         $object = $this->model()::create($validated);
 
-        return $object->refresh();
+        $object->refresh();
+
+        $resource = $this->resource();
+
+        return new $resource($object);
     }
 
     public function show($id)
     {
-        return $this->model()::findOrFail($id);
+        $object = $this->model()::findOrFail($id);
+        $resource = $this->resource();
+
+        return new $resource($object);
     }
 
     public function update(Request $request, $id)
@@ -40,7 +64,9 @@ abstract class BasicCrudController extends Controller
 
         $object->update($request->all());
 
-        return $object;
+        $resource = $this->resource();
+
+        return new $resource($object);
     }
 
     public function destroy($id)

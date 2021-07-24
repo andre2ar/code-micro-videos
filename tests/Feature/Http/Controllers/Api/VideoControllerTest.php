@@ -25,6 +25,42 @@ class VideoControllerTest extends TestCase
 
     private Video $video;
     private array $sendData;
+    private array $fieldsSerialized = [
+        'id',
+        'title',
+        'description',
+        'year_launched',
+        'rating',
+        'duration',
+        'opened',
+        'thumb_file_url',
+        'banner_file_url',
+        'video_file_url',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'categories' => [
+            '*' => [
+                'id',
+                'name',
+                'description',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at'
+            ]
+        ],
+        'genres' => [
+            '*' => [
+                'id',
+                'name',
+                'is_active',
+                'created_at',
+                'updated_at',
+                'deleted_at'
+            ]
+        ]
+    ];
     protected function setUp(): void
     {
         parent::setUp();
@@ -46,7 +82,13 @@ class VideoControllerTest extends TestCase
         $response = $this->get(route('videos.index'));
 
         $response->assertStatus(200)
-            ->assertJson([$this->video->toArray()]);
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => $this->fieldsSerialized
+                ],
+                'links' => [],
+                'meta' => []
+            ]);
     }
 
     public function testShow()
@@ -54,7 +96,9 @@ class VideoControllerTest extends TestCase
         $response = $this->get(route('videos.show', ['video' => $this->video->id]));
 
         $response->assertStatus(200)
-            ->assertJson($this->video->toArray());
+            ->assertJsonStructure([
+                'data' => $this->fieldsSerialized
+            ]);
     }
 
     public function testInvalidationRequired()
@@ -174,8 +218,7 @@ class VideoControllerTest extends TestCase
             $this->sendData + ['opened' => false]
         );
         $response->assertJsonStructure([
-            'created_at',
-            'updated_at',
+            'data' => $this->fieldsSerialized
         ]);
         $this->assertStore(
             $this->sendData + ['categories_id' => [$category->id], 'genres_id' => [$genre->id], 'opened' => true],
@@ -197,8 +240,7 @@ class VideoControllerTest extends TestCase
             $this->sendData + ['opened' => false]
         );
         $response->assertJsonStructure([
-            'created_at',
-            'updated_at',
+            'data' => $this->fieldsSerialized
         ]);
         $this->assertUpdate(
             $this->sendData + ['categories_id' => [$category->id], 'genres_id' => [$genre->id], 'opened' => true],
@@ -263,26 +305,21 @@ class VideoControllerTest extends TestCase
             ],
         ];
 
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             $response = $this->assertStore(
                 $value['send_data'],
                 $value['test_data'] + ['deleted_at' => null]
             );
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+                'data' => $this->fieldsSerialized
             ]);
-
-            $this->assertHasCategory($response->json('id'), $value['send_data']['categories_id'][0]);
-            $this->assertHasGenre($response->json('id'), $value['send_data']['genres_id'][0]);
 
             $response = $this->assertUpdate(
                 $value['send_data'],
                 $value['test_data'] + ['deleted_at' => null]
             );
             $response->assertJsonStructure([
-                'created_at',
-                'updated_at'
+                'data' => $this->fieldsSerialized
             ]);
         }
     }
@@ -322,7 +359,7 @@ class VideoControllerTest extends TestCase
             $files
         );
         $response->assertStatus(201);
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         foreach ($files as $file) {
             Storage::assertExists("$id/{$file->hashName()}");
         }
@@ -348,7 +385,7 @@ class VideoControllerTest extends TestCase
         );
         $response->assertStatus(200);
 
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         foreach ($files as $file) {
             Storage::assertExists("$id/{$file->hashName()}");
         }

@@ -70,7 +70,7 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
             $this->sendData + $files
         );
         $response->assertStatus(201);
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         foreach ($files as $file) {
             Storage::assertExists("$id/{$file->hashName()}");
         }
@@ -88,7 +88,7 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         );
         $response->assertStatus(200);
 
-        $id = $response->json('id');
+        $id = $response->json('data.id');
         foreach ($files as $file) {
             Storage::assertExists("$id/{$file->hashName()}");
         }
